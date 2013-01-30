@@ -29,7 +29,7 @@ Enter Layers, the elegant way of handling all of this. As I stated earlier, Laye
 
 ## Getting Started
 
-Simply add layers as a requires for your game module (see the example main.js). Layers will simply inject itself on top of the existing ig.Game constructor, meaning you don't really have to do anything special to take advantage of it.
+Simply add layers.js to your impact plugins folder and set a requires for your game module (see the example main.js). Layers will simply inject itself on top of the existing ig.Game constructor, meaning you don't really have to do anything special to take advantage of it.
 
 Layers creates two main variables on the game instance that you should be aware of - `.layerOrder` and `.layers`.
 

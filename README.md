@@ -1,6 +1,6 @@
 # Layers
 
-Layers is an easy to use plugin for [ImpactJS](http://impactjs.com) that replaces the built in `update` and `draw` methods for `ig.Game` with a vastly superior API for handling various layers of `items` (including `entities`, `backgroundMaps`, and `foregroundMaps`.)  If you already sold, then skip over to [Getting Started](#getting-started) now, otherwise read on for a more complete explanation.
+Layers is an easy to use plugin for [ImpactJS](http://impactjs.com) that replaces the built in `update` and `draw` methods for `ig.Game` with a vastly superior API for handling various layers of `items` (including `entities`, `backgroundMaps`, and `foregroundMaps`.)  If you are already sold, then skip over to [Getting Started](#getting-started) now, otherwise read on for a more complete explanation.
 
 
 ## Why?
@@ -29,13 +29,17 @@ Enter Layers, the elegant way of handling all of this. As I stated earlier, Laye
 
 ## Getting Started
 
+Simply add layers as a requires for your game module (see the example main.js). Layers will simply inject itself on top of the existing ig.Game constructor, meaning you don't really have to do anything special to take advantage of it.
+
 Layers creates two main variables on the game instance that you should be aware of - `.layerOrder` and `.layers`.
 
-`.layerOrder` is an array of strings, it defines what layers are drawn and what order.
+`.layerOrder` is an array of strings, it defines what layers are drawn and what order. By default it would look like this:
+
+`['backgroundMaps', 'entities', 'foregroundMaps']`
 
 `.layers` is an object/dictionary of all the available layers.
 
-Generally speaking the way to use Layers is to first add layers using `.createLayer` method and then set the `.layerOrder` using `.setLayerSort` method. Here's a quick example, from the including example application:
+Generally speaking the way to use Layers is to first add layers using `.createLayer` method. Here's a quick example, from the including example application:
 
 ```
 init: function(){
@@ -74,6 +78,174 @@ In order to use layers almost immediately in your application, simply add a `thi
 One major caveat, the `this.entities` array is not used, and therefore will be empty. You can access this array via `this.layers.entities.items` instead if necessary. Again, all built in `ig.game` methods that relied upon `this.entities` (or any of the other built in background/foreground maps) will properly use the Layers API.
 
 
-## API Documentation
+## ig.game Methods
 
-###
+### `createLayer`
+
+The method used for creating new layers. By default, if you create a layer, it is added to the `layerOrder` array.
+
+#### Example Usage
+
+```
+this.createLayer(layerName [String], properties [Object, optional], passive [Boolean, optional]);
+```
+
+#### Arguments
+
+`layerName`: This string is essentially the name or id of the layer. The layer object will get stored in the `.layers` object using this as the key. It must be a string.
+
+`properties`: This object is optional, and can take a variety of properties defined in [Layer Properties](#layer-properties).
+
+`passive`: This boolean is also optional. If set to true, the `layerName` will NOT automatically be added to `layerOrder` array (you would set this to true if you want to create a layer for later use.)
+
+
+### `removeLayer`
+
+Removes a specified layer from the `.layers` object. Deferred until next frame for safety. Please note that removeLayer does not modify `.layerOrder` if you remove a layer, be sure you also update `.layerOrder` using the method `.setLayerSort` below.
+
+#### Example Usage
+
+```
+this.removeLayer(layerName [String]);
+```
+
+#### Arguments
+
+`layerName`: The name of the layer to be removed.
+
+
+### `addItem`
+
+This method is used to add items (and by items it can range from an entity or background-map instance, to your own custom objects) to a layer. The item must contain a `_layer` key with the value being a string of the layer to add the item too.  Also be sure that it has the appropriate `update` and/or `draw` methods as per the layer's options.
+#### Example Usage
+
+```
+this.addItem(item [Object/Class Instance], layerName [String, optional]);
+```
+
+#### Arguments
+
+`item`: This is an object or class instance (such as an entity or background-map) to be added to a layer.
+
+`layerName`: This allows you to specify the layer to add the item too. It overwrites the built in `_layer` property.
+
+
+### `removeItem`
+
+This is the opposite of `addItem`. It removes the passed in item from the layer it is on.
+
+#### Example Usage
+
+```
+this.removeItem(item [Object/Class Instance]);
+```
+
+#### Arguments
+
+`item`: This is an object or class instance (such as an entity or background-map) to be removed.
+
+
+### `setLayerProperties`
+
+This sets the properties of a given layer, but it is deferred until the next frame, to be safe.
+
+#### Example Usage
+
+```
+this.setLayerProperties(layerName [String], properties [Object]);
+```
+
+#### Arguments
+
+`layerName`: The layer whose properties to edit.
+
+`properties`: The properties to merge into the layer.
+
+
+### `setLayerSort`
+
+Replaces `layerOrder` with the new given array. Deferred until next frame for safety.
+
+#### Example Usage
+
+```
+this.setLayerSort(order [Array]);
+```
+
+#### Arguments
+
+`order`: An array of strings that defines what the new `layerOrder` will be.
+
+
+## Layer Properties
+
+Every layer can have a series of properties that can vastly modify how it is used and interacted with. These properties can be defined on `.createLayer` or using `.setLayerProperties` method.
+
+Before we get into the specific layer properties, here's a bit of explanation of the layer model:
+
+```
+layers: {
+	'backgroundMaps': {
+		clearOnLoad : true,
+		mapLayer    : true,
+		noUpdate    : true,
+
+		items : []
+	},
+
+	'entities': {
+		clearOnLoad : true,
+		entityLayer : true,
+
+		items: []
+	}
+}
+```
+
+Each layer has an items array, this is automatically added on createLayer and is used to hold all item instances (such as entities or background-maps). It's generally a good idea to use the `addItem` and `removeItem` methods for manipulating these arrays since they are 'safe'.
+
+The booleans are properties that will be documented in this section.
+
+### `mapLayer`
+
+This defines the layer as a layer that contains background-map instances.
+
+
+### `entityLayer`
+
+This defines the layer as a layer that contains entity instances. This is very important since it will allow trigger Impact's built in collision detection to occur.
+
+Please note, collision detection only occurs between entities on the same level.
+
+
+### `clearOnLoad`
+
+This layer's items will get cleared everytime `this.loadLevel` is used.
+
+
+### `noUpdate` and `noDraw`
+
+This allows you to disable the `update` or `draw` methods of that layer's items. This can allow for some very unique features, such as pausing entity movement when you set `noUpdate` to an entities layer.
+
+
+### `clean`
+
+This means that when removing this layer, all items have a `._cleanUp` method to call on removal. This may be deprecated soon.
+
+
+## Some notes on entity layers
+
+The default entities layer will inherit a series of sorting properties from the game instance. However, every entity layer can have it's own set of sorting properties:
+
+```
+layers: {
+	'entities': {
+		entityLayer: true,
+		autoSort: [Boolean - if true, all items in this layer are sorted]
+		sortBy: [Function - use any of Impact's sort algorithms or write your own]
+		_doSortEntities: [Boolean - used for deferred sorting if not using autoSort]
+	}
+}
+```
+
+See the [ImpactJS Game Docs](http://impactjs.com/documentation/class-reference/game) for more details on these properties.

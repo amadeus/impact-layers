@@ -88,6 +88,8 @@ ig.Game.inject({
 	// To remove the possibility of ever experiencing a race condition,
 	// every call to removeItem is deferred
 	removeItem: function(item) {
+		if (!item || !item._layer)
+			throw new Error('Layers: Cannot remove an item that doesn\'t exist or has now ._layer property');
 		this._itemsToRemove = this._itemsToRemove.concat(item);
 		return this;
 	},

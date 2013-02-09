@@ -19,8 +19,7 @@ ig.Game.inject({
 		// Setup the necessary order
 		this.createLayer('backgroundMaps', {
 			clearOnLoad: true,
-			mapLayer: true,
-			noUpdate: true
+			mapLayer: true
 		});
 
 		this.createLayer('entities', {
@@ -33,8 +32,7 @@ ig.Game.inject({
 
 		this.createLayer('foregroundMaps', {
 			clearOnLoad: true,
-			mapLayer: true,
-			noUpdate: true
+			mapLayer: true
 		});
 	},
 
@@ -265,7 +263,7 @@ ig.Game.inject({
 			layer = this.layers[layerName];
 			items = layer.items;
 
-			if (layer.noUpdate) continue;
+			if (layer.noUpdate || layer.mapLayer) continue;
 
 			for (xx = 0; xx < items.length; xx++)
 				items[xx].update();

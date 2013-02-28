@@ -226,6 +226,16 @@ ig.Game.inject({
 			ig.merge(this.layers[layer[0]], layer[1]);
 		}
 
+		// Remove all queued items
+		while (this._itemsToRemove.length) {
+			item  = this._itemsToRemove.shift();
+			items = this.layers[item._layer].items;
+			x = items.indexOf(item);
+			if (item._cleanUp) item._cleanUp();
+			if (x < 0) continue;
+			items.splice(x, 1);
+		}
+
 		// Remove all deferred layers
 		while (this._layersToRemove.length) {
 			layerName = this._layersToRemove.shift();
@@ -235,16 +245,6 @@ ig.Game.inject({
 				this._itemsToRemove = this._itemsToRemove.concat(layer.items);
 			}
 			delete this.layers[layerName];
-		}
-
-		// Remove all queued items
-		while (this._itemsToRemove.length) {
-			item  = this._itemsToRemove.shift();
-			items = this.layers[item._layer].items;
-			x = items.indexOf(item);
-			if (item._cleanUp) item._cleanUp();
-			if (x < 0) continue;
-			items.splice(x, 1);
 		}
 
 		// Update new layer order

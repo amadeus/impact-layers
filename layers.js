@@ -96,7 +96,7 @@ ig.Game.inject({
 
 	sortEntitiesDeferred: function(layer) {
 		layer = layer || 'entities';
-		this.layer[layer]._doSortEntities = true;
+		this.layers[layer]._doSortEntities = true;
 	},
 
 	sortEntities: function(layer) {

@@ -71,6 +71,12 @@ ig.Game.inject({
 		return this;
 	},
 
+	// Removes all items on a given layer, safely
+	clearLayer: function(layerName){
+		this._itemsToRemove = this._itemsToRemove.concat(this.layers[layerName].items);
+		return this;
+	},
+
 	// Add an item to a specific layer
 	addItem: function(item, layerName){
 		var layer;

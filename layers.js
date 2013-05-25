@@ -49,8 +49,14 @@ ig.Game.inject({
 	// Create's a layer
 	createLayer: function(name, properties, passive){
 		var layer = this.layers[name] = ig.merge(this.layers[name] || {}, properties);
-		if (!layer.items)
+		if (!layer.items) {
 			layer.items = [];
+		}
+
+		// Enable backwards support of the `entities` layer
+		if (name === 'entities') {
+			this.entities = layer.items;
+		}
 
 		// If passive, we don't add the newly created layer
 		// to layerRenderOrder
@@ -357,8 +363,13 @@ ig.Game.inject({
 		for (x = 0; x < len; x++) {
 			layerName = this.layerOrder[x];
 			layer = this.layers[layerName];
-			if (layer.clearOnLoad)
+			if (layer.clearOnLoad) {
 				layer.items = [];
+				// Fix entities array compatibility
+				if (layerName === 'entities') {
+					this.entities = layer.items;
+				}
+			}
 		}
 
 		// Entities

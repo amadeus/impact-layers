@@ -9,13 +9,13 @@ Now you may be asking, "Why should I even use this plugin?" A fair question, but
 
 Normally when you create an ImpactJS game you are going to require a dearth of extra functionality not immediately available.  Thankfully ImpactJS is pretty extensible and allows you easily extend any aspect of the framework to do your bidding.  While this is pretty awesome, one needs to also be careful with such power; as they say, with great power comes great responsibility.  It is easy to create overwhelming complexity in your ImpactJS application and therefore it's a good idea enforce certain patterns to keep everything sane.
 
-One of the oft abused extensibility of ImpactJS are the `update` and `draw` methods.  These two methods alone account nearly all of execution time in an ImpactJS application.  For each frame of the application (generally executed 60 times a second) the engine first fires `update`, then `draw`.
+One of the oft abused extensibilities of ImpactJS are the `update` and `draw` methods.  These two methods alone account nearly all of execution time in an ImpactJS application.  For each frame of the application (generally executed 60 times a second) the engine first fires `update`, then `draw`.
 
-By default, the `update` method iterates through all backgrounds, entities and foregrounds to update their states.  This is all immediately followed by `draw` which uses that state to draw the appropriate game state.
+By default, the `update` method iterates through all backgrounds, entities and foregrounds (in that order) to update their states.  This is all immediately followed by `draw` which uses that state to draw the appropriate game state.
 
 Out of the box, ImpactJS simply supports `backgroundMaps`, `entities`, and `foregroundMaps`, but what happens if you want, say a GUI that overlays on top the game? This is where the extensibility in ImpactJS starts to get hairy.  Normally the way to do this would be something like this:
 
-```
+```js
 draw: function(){
 	this.parent();
 	this.updateGUILayer();
@@ -24,7 +24,7 @@ draw: function(){
 
 This draw method would always ensure that the GUI is drawn on top of all other game elements.  Sure this is quick and dirty, and yes it works, however, what happens if we want to build a pause screen? We have to now add logic into `.updateGUILayer` to ensure it doesn't display when the game is paused. This can also apply to numerous situations, such as the level completion screen, or the opening menu, etc. All of a sudden you have this extra function call that is highly unnecessary in many contexts, and every time you build out a new part of your game that doesn't need the GUI, you have to ensure this method never gets called or returns immediately; the beginning of some good spaghetti code!
 
-Enter Layers, the elegant way of handling all of this. As I stated earlier, Layers overwrites the based `update` and `draw` methods of `ig.Game` with a highly extendible API that allows you to draw any number of layers in any order you please.
+Enter Layers, the elegant way of handling all of this. As I stated earlier, Layers overwrites the based `update` and `draw` methods of `ig.Game` with a highly extendible API that allows you to draw any number of layers in any order you please. Read on into the [Getting Started](#getting-started) section to learn the new and improved way of doing things in Layers.
 
 
 ## Getting Started
@@ -39,43 +39,56 @@ Layers creates two main variables on the game instance that you should be aware 
 
 `.layers` is an object/dictionary of all the available layers.
 
-Generally speaking the way to use Layers is to first add layers using `.createLayer` method. Here's a quick example, from the including example application:
+Note that `.layerOrder` does not need to contain ALL layers held in the `.layers` object. This gives you the great power to simply toggle layers on and off as needed without having to recreate them.
 
-```
-init: function(){
-	this.createLayer('gui', {
-		noUpdate: true
-	});
+Generally speaking the way to use Layers is to first add layers using `.createLayer` method. Here's a quick example, from the included example application:
+
+```js
+init: function() {
+	this.parent();
+
+	this.createLayer('gui');
 
 	this.addItem({
 		_layer: 'gui',
-		font: this.font,
-		draw: function(){
-			var x = ig.system.width/2,
-				y = ig.system.height/2;
 
-			this.font.draw('Hello World!, I am a layer!', x, y, ig.Font.ALIGN.CENTER);
+		font: this.font,
+
+		update: function(){
+			this.x = ig.system.width  / 2;
+			this.y = ig.system.height / 2;
+		},
+
+		draw: function(){
+			this.font.draw(
+				'Hello World!, I am a layer!',
+				this.x,
+				this.y,
+				ig.Font.ALIGN.CENTER
+			);
 		}
 	});
 }
 ```
 
-The first part of the `init` method is the `.createLayer` method. The first argument is the layer name and the second argument is an object containing level properties. In this case, I don't need an update call, only draw, so I set `noUpdate` to true to prevent an unnecessary function call. Also by default, a call to `.createLayer` adds that layer to the `.layerOrder` array.
+The first part of the `init` method we call `this.parent()` to ensure all default layers get created. Next we call the `.createLayer` method to create a new layer for gui stuff. As a result of this call, the gui layer gets added as the topmost layer in `.layerOrder`.
 
 The second part, is where we actually add an item to the `gui` layer to be drawn on the game canvas. Normally you would add an instance of something, such as an `entity` object or `background-map`, but for the sake of this explanation, we are keeping it as a simple object with the bare minimum requirements for a layer.
 
 The first property of the item, `_layer` instructs the `.addItem` method which layer to place the item. The `font` property is simply a reference for our `draw` method.
 
-The `draw` method is where all the action happens, normally we would have an associated `update` method as well, however, remember we set `noUpdate` to `true` so we don't need it. This `draw` method gets called on every frame of `ig.game`.
+Next we have an `update` method updates the `x` and `y` position for the `draw` method.
+
+Lastyle, the `draw` method is where we actually draw the font to the canvas.
+
+Remember, `update` and `draw` are around 60 times a second, like the normal ImpactJS `update`/`draw` methods.
 
 And voilà, we've created our first Layers game!
 
 
 ## Things to note
 
-In order to use layers almost immediately in your application, simply add a `this.parent()` call at the start of your game's `init` function. This will ensure all the default layers get created (`backgroundMaps`, `entities`, `foregroundMaps`.)  All existing methods that deal with entities or background maps have been updated to "just work" with this new API.
-
-One major caveat, the `this.entities` array is not used, and therefore will be empty. You can access this array via `this.layers.entities.items` instead if necessary. Again, all built in `ig.game` methods that relied upon `this.entities` (or any of the other built in background/foreground maps) will properly use the Layers API.
+In order to use layers almost immediately in your application, simply remember the `this.parent()` call at the start of your game's `init` function. This will ensure all the default layers get created (`backgroundMaps`, `entities`, `foregroundMaps`.)  All existing methods that deal with entities or background maps have been updated to "just work" with this new API.
 
 
 ## ig.game Methods
@@ -86,7 +99,7 @@ The method used for creating new layers. By default, if you create a layer, it i
 
 #### Example Usage
 
-```
+```js
 this.createLayer(layerName [String], properties [Object, optional], passive [Boolean, optional]);
 ```
 
@@ -105,7 +118,7 @@ Removes a specified layer from the `.layers` object. Deferred until next frame f
 
 #### Example Usage
 
-```
+```js
 this.removeLayer(layerName [String]);
 ```
 
@@ -119,7 +132,7 @@ this.removeLayer(layerName [String]);
 This method is used to add items (and by items it can range from an entity or background-map instance, to your own custom objects) to a layer. The item must contain a `_layer` key with the value being a string of the layer to add the item too.  Also be sure that it has the appropriate `update` and/or `draw` methods as per the layer's options.
 #### Example Usage
 
-```
+```js
 this.addItem(item [Object/Class Instance], layerName [String, optional]);
 ```
 
@@ -136,7 +149,7 @@ This is the opposite of `addItem`. It removes the passed in item from the layer 
 
 #### Example Usage
 
-```
+```js
 this.removeItem(item [Object/Class Instance]);
 ```
 
@@ -151,7 +164,7 @@ This sets the properties of a given layer, but it is deferred until the next fra
 
 #### Example Usage
 
-```
+```js
 this.setLayerProperties(layerName [String], properties [Object]);
 ```
 
@@ -168,7 +181,7 @@ Replaces `layerOrder` with the new given array. Deferred until next frame for sa
 
 #### Example Usage
 
-```
+```js
 this.setLayerSort(order [Array]);
 ```
 
@@ -183,7 +196,7 @@ Every layer can have a series of properties that can vastly modify how it is use
 
 Before we get into the specific layer properties, here's a bit of explanation of the layer model:
 
-```
+```js
 layers: {
 	'backgroundMaps': {
 		clearOnLoad : true,
@@ -202,7 +215,7 @@ layers: {
 }
 ```
 
-Each layer has an items array, this is automatically added on createLayer and is used to hold all item instances (such as entities or background-maps). It's generally a good idea to use the `addItem` and `removeItem` methods for manipulating these arrays since they are 'safe'.
+Each layer has an items array, this is automatically added on `.createLayer` and is used to hold all item instances (such as entities or background-maps). It's generally a good idea to use the `addItem` and `removeItem` methods for manipulating these arrays since they are 'safe'.
 
 The booleans are properties that will be documented in this section.
 
@@ -220,7 +233,7 @@ Please note, collision detection only occurs between entities on the same level.
 
 ### `clearOnLoad`
 
-This layer's items will get cleared everytime `this.loadLevel` is used.
+This layer's items will get cleared every time `this.loadLevel` is used.
 
 
 ### `noUpdate` and `noDraw`
@@ -237,7 +250,7 @@ This means that when removing this layer, all items have a `._cleanUp` method to
 
 The default entities layer will inherit a series of sorting properties from the game instance. However, every entity layer can have it's own set of sorting properties:
 
-```
+```js
 layers: {
 	'entities': {
 		entityLayer: true,

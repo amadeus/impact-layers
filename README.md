@@ -250,13 +250,13 @@ This means that when removing this layer, all items have a `._cleanUp` method to
 
 The default entities layer will inherit a series of sorting properties from the game instance. However, every entity layer can have it's own set of sorting properties:
 
-```js
+```
 layers: {
 	'entities': {
-		entityLayer: true,
-		autoSort: [Boolean - if true, all items in this layer are sorted]
-		sortBy: [Function - use any of Impact's sort algorithms or write your own]
-		_doSortEntities: [Boolean - used for deferred sorting if not using autoSort]
+		entityLayer     : true,
+		autoSort        : [Boolean - if true, all items in this layer are sorted]
+		sortBy          : [Function - use any of Impact's sort algorithms or write your own]
+		_doSortEntities : [Boolean - used for deferred sorting if not using autoSort]
 	}
 }
 ```

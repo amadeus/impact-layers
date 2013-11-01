@@ -1,4 +1,5 @@
-// global ig
+// jshint curly: true
+/* global ig */
 ig.module(
 	'plugins.layers'
 ).requires(
@@ -60,7 +61,9 @@ ig.Game.inject({
 
 		// If passive, we don't add the newly created layer
 		// to layerRenderOrder
-		if (passive) return;
+		if (passive) {
+			return this;
+		}
 		this.layerOrder.push(name);
 		return this;
 	},
@@ -93,7 +96,9 @@ ig.Game.inject({
 		layerName = layerName || item._layer;
 		// Throw a descriptive error if the layer doesn't exist
 		layer = this.layers[layerName];
-		if (!layer) throw new Error('Attempting to add to a layer that doesn\'t exist: ' + layerName);
+		if (!layer) {
+			throw new Error('Attempting to add to a layer that doesn\'t exist: ' + layerName);
+		}
 
 		// Always hold a reference to the item's layer, for easier removal
 		item._layer = layerName;
@@ -104,8 +109,9 @@ ig.Game.inject({
 	// To remove the possibility of ever experiencing a race condition,
 	// every call to removeItem is deferred
 	removeItem: function(item) {
-		if (!item || !item._layer)
+		if (!item || !item._layer) {
 			throw new Error('Layers: Cannot remove an item that doesn\'t exist or has now ._layer property');
+		}
 		this._itemsToRemove = this._itemsToRemove.concat(item);
 		return this;
 	},
@@ -117,7 +123,9 @@ ig.Game.inject({
 
 	sortEntities: function(layer) {
 		layer = this.layers[layer || 'entities'];
-		if (!layer) return this;
+		if (!layer) {
+			return this;
+		}
 		layer.items.sort(layer.sortBy);
 		return this;
 	},
@@ -127,8 +135,9 @@ ig.Game.inject({
 			ent, i;
 		for (i = 0; i < entities.length; i++ ) {
 			ent = entities[i];
-			if(!ent._killed)
+			if(!ent._killed) {
 				ent.update();
+			}
 		}
 		return this;
 	},
@@ -140,7 +149,9 @@ ig.Game.inject({
 		// Get the array of entities based on the passed in argument
 		// or just default to the entities layer
 		layer = this.layers[entities || 'entities'];
-		if (!layer || !layer.entityLayer) return;
+		if (!layer || !layer.entityLayer) {
+			return;
+		}
 
 		entities = layer.items;
 		len = entities.length;
@@ -212,19 +223,23 @@ ig.Game.inject({
 
 	getMapByName: function(name) {
 		var x, xx, items, layer;
-		if(name === 'collision')
+		if(name === 'collision') {
 			return this.collisionMap;
+		}
 
 		// Iterate through background layers to find the named one
 		for (x = 0; x < this.layerOrder.length; x++) {
 			layer = this.layers[this.layerOrder[x]];
 			items = layer.items;
 
-			if (!layer.mapLayer) continue;
+			if (!layer.mapLayer) {
+				continue;
+			}
 
 			for (xx = 0; xx < items.length; xx++) {
-				if(items[xx].name === name)
+				if(items[xx].name === name) {
 					return items[xx];
+				}
 			}
 		}
 
@@ -247,8 +262,12 @@ ig.Game.inject({
 			item  = this._itemsToRemove.shift();
 			items = this.layers[item._layer].items;
 			x = items.indexOf(item);
-			if (item._cleanUp) item._cleanUp();
-			if (x < 0) continue;
+			if (item._cleanUp) {
+				item._cleanUp();
+			}
+			if (x < 0) {
+				continue;
+			}
 			items.splice(x, 1);
 		}
 
@@ -256,7 +275,9 @@ ig.Game.inject({
 		while (this._layersToRemove.length) {
 			layerName = this._layersToRemove.shift();
 			layer = this.layers[layerName];
-			if (!layer) continue;
+			if (!layer) {
+				continue;
+			}
 			if (layer.clean) {
 				this._itemsToRemove = this._itemsToRemove.concat(layer.items);
 			}
@@ -281,18 +302,22 @@ ig.Game.inject({
 			layer = this.layers[layerName];
 			items = layer.items;
 
-			if (layer.noUpdate || layer.mapLayer) continue;
+			if (layer.noUpdate || layer.mapLayer) {
+				continue;
+			}
 
-			for (xx = 0; xx < items.length; xx++)
+			for (xx = 0; xx < items.length; xx++) {
 				items[xx].update();
+			}
 
 			if (layer.entityLayer && (layer._doSortEntities || layer.autoSort)) {
 				items.sort(layer.sortBy || this.sortBy);
 				layer._doSortEntities = false;
 			}
 
-			if (layer.entityLayer)
+			if (layer.entityLayer) {
 				this.checkEntities(layerName);
+			}
 		}
 
 		// Remove all killed entities
@@ -300,8 +325,12 @@ ig.Game.inject({
 			item  = this._deferredKill.shift();
 			items = this.layers[item._layer].items;
 			x = items.indexOf(item);
-			if (item._cleanUp) item._cleanUp();
-			if (x < 0) continue;
+			if (item._cleanUp) {
+				item._cleanUp();
+			}
+			if (x < 0) {
+				continue;
+			}
 			items.splice(x, 1);
 		}
 
@@ -318,8 +347,9 @@ ig.Game.inject({
 		// Variables for layer draws
 		var layer, x, xx, items;
 
-		if(this.clearColor)
+		if(this.clearColor) {
 			ig.system.clear(this.clearColor);
+		}
 
 		// This is a bit of a circle jerk. Entities reference game._rscreen
 		// instead of game.screen when drawing themselfs in order to be
@@ -330,24 +360,30 @@ ig.Game.inject({
 		for (x = 0; x < this.layerOrder.length; x++) {
 			layer = this.layers[this.layerOrder[x]];
 			items = layer.items;
-			if (layer.noDraw) continue;
-			for (xx = 0; xx < items.length; xx++)
+			if (layer.noDraw) {
+				continue;
+			}
+			for (xx = 0; xx < items.length; xx++) {
 				items[xx].draw();
+			}
 		}
 	},
 
 	spawnEntity: function(type, x, y, settings) {
 		var EntityClass = typeof(type) === 'string' ? ig.global[type] : type, ent;
 
-		if(!EntityClass)
+		if(!EntityClass) {
 			throw new Error('Can\'t spawn entity of type: ' + type);
+		}
 
 		ent = new (EntityClass)(x, y, settings || {});
 
 		// Push entity into appropriate layer
 		this.addItem(ent);
 
-		if(ent.name) this.namedEntities[ent.name] = ent;
+		if(ent.name) {
+			this.namedEntities[ent.name] = ent;
+		}
 
 		return ent;
 	},
@@ -406,10 +442,11 @@ ig.Game.inject({
 				newMap.name = ld.name;
 
 				// No layer provided, which means we guesstimate
-				if (!newMap._layer && newMap.foreground)
+				if (!newMap._layer && newMap.foreground) {
 					newMap._layer = 'foregroundMaps';
-				else if (!newMap._layer)
+				} else if (!newMap._layer) {
 					newMap._layer = 'backgroundMaps';
+				}
 
 				this.addItem(newMap);
 			}
@@ -454,9 +491,14 @@ ig.BackgroundMap.inject({
 	// drawing method much simpler
 	draw: function(){
 		this.setScreenPos(ig.game.screen.x, ig.game.screen.y);
-		if(!this.tiles.loaded || !this.enabled) return;
-		if(this.preRender) this.drawPreRendered();
-		else this.drawTiled();
+		if (!this.tiles.loaded || !this.enabled) {
+			return;
+		}
+		if (this.preRender) {
+			this.drawPreRendered();
+		} else {
+			this.drawTiled();
+		}
 	}
 
 });

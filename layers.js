@@ -73,7 +73,11 @@ ig.Game.inject({
 	// To remove the possibility of ever experiencing a race condition,
 	// every call to removeLayer is deferred
 	removeLayer: function(name){
-		this._layersToRemove.push(name);
+		var index = this._layersToRemove.indexOf(name);
+		// Only add the layer to the array if it hasn't been added already
+		if (index === -1) {
+			this._layersToRemove.push(name);
+		}
 		return this;
 	},
 
@@ -363,6 +367,10 @@ ig.Game.inject({
 		for (x = 0; x < len; x++) {
 			layerName = this.layerOrder[x];
 			layer = this.layers[layerName];
+			// If the layer has been already somehow cleared...
+			if (!layer) {
+				continue;
+			}
 			if (layer.clearOnLoad) {
 				layer.items = [];
 				// Fix entities array compatibility

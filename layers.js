@@ -281,7 +281,7 @@ ig.Game.inject({
 			if (layer.clean) {
 				this._itemsToRemove = this._itemsToRemove.concat(layer.items);
 			}
-			delete this.layers[layerName];
+			this.layers[layerName] = null;
 		}
 
 		// Update new layer order

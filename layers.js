@@ -73,6 +73,10 @@ ig.Game.inject({
 	_layersToRemove  : [],
 	_itemsToRemove   : [],
 
+	// For pushing and popping layerOrder props
+	_layersToPush    : [],
+	_layersToPop     : [],
+
 	// To remove the possibility of ever experiencing a race condition,
 	// every call to removeLayer is deferred
 	removeLayer: function(name){
@@ -80,6 +84,25 @@ ig.Game.inject({
 		// Only add the layer to the array if it hasn't been added already
 		if (index === -1) {
 			this._layersToRemove.push(name);
+		}
+		return this;
+	},
+
+	// Adds a layer to end of sort
+	pushLayer: function(name){
+		var index = this._layersToPush.indexOf(name);
+		// Only add layer to the array if it hasn't been added already
+		if (index === -1) {
+			this._layersToPush.push(name);
+		}
+		return this;
+	},
+
+	// Removes a layer by name from the sort
+	popLayer: function(name){
+		var index = this._layersToPop.indexOf(name);
+		if (index === -1) {
+			this._layersToPop.push(name);
 		}
 		return this;
 	},
@@ -249,7 +272,7 @@ ig.Game.inject({
 	update: function(){
 		// Variables for layer updates
 		var layerName, layer, x, xx, items, item,
-			tileset, anims;
+			tileset, anims, index;
 
 		// Set any deferred layer properties
 		while (this._layerProperties.length) {
@@ -288,6 +311,25 @@ ig.Game.inject({
 		if (this._layerOrder) {
 			this.layerOrder = this._layerOrder;
 			this._layerOrder = null;
+		}
+
+		// Layer Push
+		if (this._layersToPush.length) {
+			for (x = 0; x < this._layersToPush.length; x++) {
+				this.layerOrder.push(this._layersToPush[x]);
+			}
+			this._layersToPush = [];
+		}
+
+		// Layer Pop
+		if (this._layersToPop.length) {
+			for (x = 0; x < this._layersToPop.length; x++) {
+				index = this.layerOrder.indexOf(this._layersToPop[x]);
+				if (index !== -1) {
+					this.layerOrder.splice(index, 1);
+				}
+			}
+			this._layersToPop = [];
 		}
 
 		// load new level

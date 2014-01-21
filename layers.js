@@ -13,6 +13,14 @@ ig.Game.inject({
 	// Default group of layers
 	layerOrder: [],
 
+	// Any method in this array will be called right before the following
+	// frame tick
+	onPreRun  : [],
+
+	// Any method in this array will be executed after all other logic
+	// for the current tick has executed
+	onPostRun : [],
+
 	// All renderable layers
 	layers: {},
 
@@ -43,7 +51,7 @@ ig.Game.inject({
 	},
 
 	setLayerSort: function(order){
-		this._layerOrder = (order && order.length) ? order : [];
+		this._layerOrder = (order && order.length) ? order : null;
 		return this;
 	},
 
@@ -277,21 +285,11 @@ ig.Game.inject({
 		// Set any deferred layer properties
 		while (this._layerProperties.length) {
 			layer = this._layerProperties.shift();
-			ig.merge(this.layers[layer[0]], layer[1]);
-		}
-
-		// Remove all queued items
-		while (this._itemsToRemove.length) {
-			item  = this._itemsToRemove.shift();
-			items = this.layers[item._layer].items;
-			x = items.indexOf(item);
-			if (item._cleanUp) {
-				item._cleanUp();
-			}
-			if (x < 0) {
+			// If the layer doesn't exist, just silently continue
+			if (!this.layers[layer[0]]) {
 				continue;
 			}
-			items.splice(x, 1);
+			ig.merge(this.layers[layer[0]], layer[1]);
 		}
 
 		// Remove all deferred layers
@@ -305,6 +303,30 @@ ig.Game.inject({
 				this._itemsToRemove = this._itemsToRemove.concat(layer.items);
 			}
 			this.layers[layerName] = null;
+		}
+
+		// Remove all queued items
+		while (this._itemsToRemove.length) {
+			item  = this._itemsToRemove.shift();
+			// We us a ternary in case the layer was already removed,
+			// then there is no need to actually remove the item, simply
+			// call its _itemCleanUp method and be done
+			items = this.layers[item._layer] ?
+				this.layers[item._layer].items : null;
+
+			if (item._itemCleanUp) {
+				item._itemCleanUp();
+			}
+
+			if (!items) {
+				continue;
+			}
+
+			x = items.indexOf(item);
+			if (x < 0) {
+				continue;
+			}
+			items.splice(x, 1);
 		}
 
 		// Update new layer order
@@ -333,7 +355,7 @@ ig.Game.inject({
 		}
 
 		// load new level
-		if(this._levelToLoad) {
+		if (this._levelToLoad) {
 			this.loadLevel(this._levelToLoad);
 			this._levelToLoad = null;
 		}
@@ -367,8 +389,8 @@ ig.Game.inject({
 			item  = this._deferredKill.shift();
 			items = this.layers[item._layer].items;
 			x = items.indexOf(item);
-			if (item._cleanUp) {
-				item._cleanUp();
+			if (item._itemCleanUp) {
+				item._itemCleanUp();
 			}
 			if (x < 0) {
 				continue;
@@ -516,6 +538,29 @@ ig.Game.inject({
 
 		for (i = 0; i < elen; i++) {
 			entities[i].draw();
+		}
+	},
+
+	run: function() {
+		var i;
+
+		if (this.onPreRun.length) {
+			for (i = 0; i < this.onPreRun.length; i++) {
+				this.onPreRun[i]();
+			}
+			this.onPreRun.length = 0;
+		}
+
+		if (!this._pauseRun) {
+			this.update();
+			this.draw();
+		}
+
+		if (this.onPostRun.length) {
+			for (i = 0; i < this.onPostRun.length; i++) {
+				this.onPostRun[i]();
+			}
+			this.onPostRun.length = 0;
 		}
 	}
 

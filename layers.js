@@ -147,7 +147,7 @@ ig.Game.inject({
 	// every call to removeItem is deferred
 	removeItem: function(item) {
 		if (!item || !item._layer) {
-			throw new Error('Layers: Cannot remove an item that doesn\'t exist or has now ._layer property');
+			throw new Error('Layers: Cannot remove an item that doesn\'t exist or has no ._layer property');
 		}
 		this._itemsToRemove.push(item);
 		return this;

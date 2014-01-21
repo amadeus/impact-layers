@@ -117,7 +117,13 @@ ig.Game.inject({
 
 	// Removes all items on a given layer, safely
 	clearLayer: function(layerName){
-		this._itemsToRemove = this._itemsToRemove.concat(this.layers[layerName].items);
+		// Using array splice, to cut down on both
+		// garbage and apparently it's a ton faster
+		Array.prototype.splice.call(
+			this._itemsToRemove,
+			this._itemsToRemove.length,
+			0, this.layers[layerName].items
+		);
 		return this;
 	},
 
@@ -143,7 +149,7 @@ ig.Game.inject({
 		if (!item || !item._layer) {
 			throw new Error('Layers: Cannot remove an item that doesn\'t exist or has now ._layer property');
 		}
-		this._itemsToRemove = this._itemsToRemove.concat(item);
+		this._itemsToRemove.push(item);
 		return this;
 	},
 
@@ -299,9 +305,13 @@ ig.Game.inject({
 			if (!layer) {
 				continue;
 			}
-			if (layer.clean) {
-				this._itemsToRemove = this._itemsToRemove.concat(layer.items);
-			}
+			// Using array splice, to cut down on both
+			// garbage and apparently it's a ton faster
+			Array.prototype.splice.call(
+				this._itemsToRemove,
+				this._itemsToRemove.length,
+				0, layer.items
+			);
 			this.layers[layerName] = null;
 		}
 

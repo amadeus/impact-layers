@@ -119,10 +119,8 @@ ig.Game.inject({
 	clearLayer: function(layerName){
 		// Using array splice, to cut down on both
 		// garbage and apparently it's a ton faster
-		Array.prototype.splice.call(
-			this._itemsToRemove,
-			this._itemsToRemove.length,
-			0, this.layers[layerName].items
+		this._itemsToRemove = this._itemsToRemove.concat(
+			this.layers[layerName].items
 		);
 		return this;
 	},
@@ -307,11 +305,7 @@ ig.Game.inject({
 			}
 			// Using array splice, to cut down on both
 			// garbage and apparently it's a ton faster
-			Array.prototype.splice.call(
-				this._itemsToRemove,
-				this._itemsToRemove.length,
-				0, layer.items
-			);
+			this._itemsToRemove = this._itemsToRemove.concat(layer.items);
 			this.layers[layerName] = null;
 		}
 

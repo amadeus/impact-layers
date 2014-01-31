@@ -487,7 +487,9 @@ ig.Game.inject({
 		this.namedEntities = {};
 		for (i = 0; i < data.entities.length; i++ ) {
 			ent = data.entities[i];
-			this.spawnEntity(ent.type, ent.x, ent.y, ent.settings);
+			if (this._validateEntitySettings) {
+				this.spawnEntity(ent.type, ent.x, ent.y, ent.settings);
+			}
 		}
 
 		// TODO: Make sortEntities sort all layers if no key provided
@@ -565,6 +567,10 @@ ig.Game.inject({
 			}
 			this.onPostRun.length = 0;
 		}
+	},
+
+	_validateEntitySettings: function(){
+		return true;
 	}
 
 });

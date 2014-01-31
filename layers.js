@@ -67,6 +67,10 @@ ig.Game.inject({
 			this.entities = layer.items;
 		}
 
+		if (name === 'backgroundMaps') {
+			this.backgroundMaps = layer.items;
+		}
+
 		// If passive, we don't add the newly created layer
 		// to layerRenderOrder
 		if (passive) {
@@ -456,7 +460,6 @@ ig.Game.inject({
 		return ent;
 	},
 
-
 	loadLevel: function(data) {
 		var len = this.layerOrder.length,
 			i, ent, ld, newMap, ilen,
@@ -476,11 +479,7 @@ ig.Game.inject({
 				continue;
 			}
 			if (layer.clearOnLoad) {
-				layer.items = [];
-				// Fix entities array compatibility
-				if (layerName === 'entities') {
-					this.entities = layer.items;
-				}
+				layer.items.length = 0;
 			}
 		}
 

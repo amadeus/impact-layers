@@ -5,7 +5,8 @@ ig.module(
 ).requires(
 	'impact.game',
 	'impact.background-map',
-	'impact.entity'
+	'impact.entity',
+	'impact.entity-pool'
 ).defines(function(){ 'use strict';
 
 ig.Game.inject({
@@ -397,8 +398,8 @@ ig.Game.inject({
 			item  = this._deferredKill.shift();
 			items = this.layers[item._layer].items;
 			x = items.indexOf(item);
-			if (item.clean) {
-				item.clean();
+			if (item.erase) {
+				item.erase();
 			}
 			if (item._itemCleanUp) {
 				item._itemCleanUp();
@@ -468,6 +469,7 @@ ig.Game.inject({
 			i, ent, ld, newMap, ilen,
 			layer, layerName, x, items;
 
+		ig.EntityPool.drainAllPools();
 		this.screen = {
 			x: 0,
 			y: 0

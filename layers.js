@@ -9,6 +9,15 @@ ig.module(
 	'impact.entity-pool'
 ).defines(function(){ 'use strict';
 
+var version = parseFloat(window.ig.version) || 0;
+
+if (!version || version < 1.23) {
+	throw new Error(
+		'layers.js requires ImpactJS v1.23 or above, ' +
+		'current version: ' + version
+	);
+}
+
 ig.Game.inject({
 
 	// Default group of layers

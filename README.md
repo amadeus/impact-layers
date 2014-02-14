@@ -2,7 +2,7 @@
 
 Layers is an easy to use plugin for [ImpactJS](http://impactjs.com) that replaces the built in `update` and `draw` methods for `ig.Game` with a vastly superior API for handling various layers of `items` (including `entities`, `backgroundMaps`, and `foregroundMaps`.)  If you are already sold, then skip over to [Getting Started](#getting-started) now, otherwise read on for a more complete explanation.
 
-Layers.js requires [ImactJS v1.23](http://impactjs.com).
+Layers.js requires [ImpactJS v1.23](http://impactjs.com).
 
 
 ## Why?

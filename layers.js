@@ -397,6 +397,9 @@ ig.Game.inject({
 			item  = this._deferredKill.shift();
 			items = this.layers[item._layer].items;
 			x = items.indexOf(item);
+			if (item.clean) {
+				item.clean();
+			}
 			if (item._itemCleanUp) {
 				item._itemCleanUp();
 			}

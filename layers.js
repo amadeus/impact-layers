@@ -449,6 +449,9 @@ ig.Game.inject({
 				continue;
 			}
 			for (xx = 0; xx < items.length; xx++) {
+				if(items[xx].setScreenPos) {
+					items[xx].setScreenPos(this.screen.x, this.screen.y);
+				}
 				items[xx].draw();
 			}
 		}
@@ -592,24 +595,6 @@ ig.Game.inject({
 ig.Entity.inject({
 
 	_layer: 'entities'
-
-});
-
-ig.BackgroundMap.inject({
-
-	// I added .setScreenPos to the draw method to make the game-wide
-	// drawing method much simpler
-	draw: function(){
-		this.setScreenPos(ig.game.screen.x, ig.game.screen.y);
-		if (!this.tiles.loaded || !this.enabled) {
-			return;
-		}
-		if (this.preRender) {
-			this.drawPreRendered();
-		} else {
-			this.drawTiled();
-		}
-	}
 
 });
 

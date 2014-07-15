@@ -501,7 +501,7 @@ ig.Game.inject({
 		this.namedEntities = {};
 		for (i = 0; i < data.entities.length; i++ ) {
 			ent = data.entities[i];
-			if (this._validateEntitySettings) {
+			if (this._validateEntitySettings(ent.settings)) {
 				this.spawnEntity(ent.type, ent.x, ent.y, ent.settings);
 			}
 		}
